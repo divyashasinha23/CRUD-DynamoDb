@@ -1,0 +1,95 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+
+           
+service: dynamodb-api
+
+custom:
+  settings:
+    POSTS_TABLE: details
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  region: eu-west-2
+  environment: ${self:custom.settings}
+  iamRoleStatements:
+   - Effect: "Allow"
+     Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+     Resource:
+      - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.POSTS_TABLE}"
+
+functions:
+  createPost:
+    handler: handler.createPost
+    events:
+    - http:
+        path: /post
+        method: post
+  getAllPosts:
+    handler: handler.getAllPosts
+    events:
+    - http:
+        path: /posts
+        method: get
+  getPosts:
+    handler: handler.getPosts
+    events:
+    - http:
+        path: /posts/{number}
+        method: get
+  getPost:
+    handler: handler.getPost
+    events:
+    - http:
+        path: /post/{id}
+        method: get
+  updatePost:
+    handler: handler.updatePost
+    events:
+    - http:
+        path: /updatepost/{AccountNumber}
+        method: put
+  deletePost:
+    handler: handler.deletePost
+    events:
+    - http:
+        path: /deletepost/{AccountNumber}
+        method: delete      
+
+
+               
+
+resources:
+  Resources:
+    PostsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+        - AttributeName: "AccountNumber"
+          AttributeType: "S"
+        KeySchema:
+        - AttributeName: "AccountNumber"
+          KeyType: "HASH"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.settings.POSTS_TABLE}
